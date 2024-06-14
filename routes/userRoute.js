@@ -61,4 +61,42 @@ router.post('/register',async(req,res) => {
         console.log(error.message)
         res.status(500).send('server error')
     }
+});
+
+// after register we will go for login //
+
+router.post('/login', async(req,res) => {
+    // for login ..// 
+    const {email,password} = req.body
+
+    // check if user exists // 
+
+    try{
+        let user = await User.findOne({email})
+        // if there is an error in password or email , no user //
+
+        if(!user){
+            return res.status(400).json({message : "invalid email or password please try again"})
+        }
+
+        // matching the password , if it doesnt match pass error 
+
+        const isMatch = bcrypt.compare(password,user.password)
+
+        // if isMatch fails pass error // 
+
+        if(!isMatch){
+            return res.status(400).json({message:"invalid email or password please try again"})
+        }
+        // then if correct else generate the jwt token // 
+
+        
+
+
+    }
+    catch(error){
+        console.log(error)
+    }
+
+    // matching the password // 
 })
