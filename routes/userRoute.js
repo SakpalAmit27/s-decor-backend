@@ -41,7 +41,7 @@ router.post('/register',async(req,res) => {
 
         // lets store it in variable 
 
-        const hasedPassword = await bcrypt.hash(password,10);
+        const hashedPassword = await bcrypt.hash(password,10);
 
     }catch(error){
         console.log(error)
