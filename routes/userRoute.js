@@ -39,6 +39,10 @@ router.post('/register',async(req,res) => {
 
         // and he is new , for registering hash the password
 
+        // lets store it in variable 
+
+        const hasedPassword = await bcrypt.hash(password,10);
+
     }catch(error){
         console.log(error)
     }
