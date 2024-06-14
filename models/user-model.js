@@ -48,3 +48,5 @@ const Usermodel = mongoose.model('Usermodel',UserSchema);
 
 // exporting our Usermodel // 
 module.exports = Usermodel
+
+// adding route after this // 
