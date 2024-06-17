@@ -90,13 +90,20 @@ router.post('/login', async(req,res) => {
         }
         // then if correct else generate the jwt token // 
 
-        
+        const token = jwt.sign({userId:user._id},
 
+            process.env.JWT_SECRET ,{expiresIn:'1h'})
 
+            res.status(200).json({token})
     }
     catch(error){
-        console.log(error)
+        console.error(error.message)
+
+        res.status(500).send('Server error');
     }
 
-    // matching the password // 
+
 })
+
+// verifiying the email 
+
