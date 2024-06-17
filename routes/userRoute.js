@@ -9,7 +9,7 @@ const router = express.Router();
 
 // importing our usermodel // 
 
-const User = require('../config/database')
+const User = require('../models/user-model')
 
 // bcrypt for hashing // 
 
@@ -31,7 +31,7 @@ router.post('/register',async(req,res) => {
     try{
         // lets intialize the user 
         // we will check with email if user is already registered or not //
-        let user = User.findOne({email})
+        let user = await User.findOne({email})
 
         if(user){
             return res.status(400).json({message:"User already exists , please login"})
@@ -105,5 +105,31 @@ router.post('/login', async(req,res) => {
 
 })
 
-// verifiying the email 
+// verifiying the email // 
 
+router.get('/verify/:token', async(req,res) => {
+    const {token} = req.params
+
+    try{
+        const user = await User.findOne({verificationToken : token})
+
+        if(!user){
+            return res.status(400).json({message:"invalid or expired token"})
+        }
+
+
+        // if not // 
+
+        user.isVerified = true
+        user.verificationToken = null
+        await user.save()
+
+        res.status(200).json({message:"email verified successfully"})
+    }catch(error){
+        console.error(error.message)
+        res.status(500).send('Server error ')
+    }
+})
+
+
+module.exports = router;
