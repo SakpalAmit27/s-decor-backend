@@ -17,6 +17,10 @@ const connectDb = require('./config/database')
 
 // using the env congig 
 
+// importing the userRoute // 
+
+const userRoute = require('./routes/userRoute')
+
 dotenv.config();
 
 // calling our connectDb to connect to database // 
@@ -34,6 +38,10 @@ app.use(cors())
 // using express json for frontned outputs // 
 
 app.use(express.json());
+
+// using the route // 
+
+app.use('/api/users',userRoute)
 
 // adding our port for server // 
 
