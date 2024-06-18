@@ -12,6 +12,8 @@ const bycrpt = require('bcryptjs')
 
 const User = require('../models/user-model')
 
+const crypto = require('crypto')
+
 // jwt //
 
 const jwt = require('jsonwebtoken')
@@ -36,17 +38,25 @@ const registerUser = async (req,res)=>{
         // hash the password first // 
 
         const hashedPassword = await bycrpt.hash(password,10)
+        // storing the json web token for user in db with registaration // 
+
+        const verificationToken = crypto.randomBytes(32).toString('hex');
 
         // create the user then  //
 
         user = new User({
             name,
             email,
-            password:hashedPassword
+            password:hashedPassword,
+            verificationToken:verificationToken,
+            isVerified:false
         })
 
         await user.save() 
 
+        // tkoen// 
+
+        console.log(`verification token : ${verificationToken}`)
         // returning the response // 
 
         res.status(201).json({message:"user registered successfully"})
@@ -120,6 +130,7 @@ const verifyEmail = async (req,res) => {
 
     try{
         let user = await User.findOne({verificationToken : token})
+        console.log(`User found: ${user}`);
         // if the token is not matching .// or doesnt exist // 
         if(!user){
             return res.status(400).json({message:"invalid or expired token"})
