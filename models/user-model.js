@@ -4,6 +4,8 @@ const { Timestamp } = require('mongodb')
 const mongoose = require('mongoose')
 const { default: isEmail } = require('validator/lib/isEmail')
 
+const validator = require('validator')
+
 // creating the schema model // 
 
 const UserSchema = mongoose.Schema({
@@ -19,7 +21,8 @@ const UserSchema = mongoose.Schema({
         // validating the email // 
         validate:{
             validator:validator.isEmail,
-            message:"please enter an valid email"
+            message:"please enter an valid email",
+            isAsync:false
         }
         
         
@@ -30,7 +33,7 @@ const UserSchema = mongoose.Schema({
     },
     // adding is user verified or not // 
     isVerified:{
-        type:boolean,
+        type:Boolean,
         default:false,
 
     },
