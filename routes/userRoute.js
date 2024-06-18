@@ -1,135 +1,87 @@
-// lets create route for user signup login , verification etc / 
-
-const express = require('express')
-
-
-// intializing the router with express // 
-
+const express = require('express');
 const router = express.Router();
+const User = require('../models/user-model');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// importing our usermodel // 
+// Register User
+router.post('/register', async (req, res) => {
+    const { name, email, password } = req.body;
 
-const User = require('../models/user-model')
-
-// bcrypt for hashing // 
-
-const bcrypt = require('bcryptjs')
-
-// jsonwebtoken // 
-
-const jwt = require('jsonwebtoken')
-
-// lets first register the user // 
-
-router.post('/register',async(req,res) => {
-    // the validate it takes
-    // the req body retrives the data from user and requests //
-    const {name , email , password} = req.body
-
-    // first lets check if user exits or not 
-
-    try{
-        // lets intialize the user 
-        // we will check with email if user is already registered or not //
-        let user = await User.findOne({email})
-
-        if(user){
-            return res.status(400).json({message:"User already exists , please login"})
+    try {
+        // Check if user exists
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: "User already exists, please login" });
         }
 
-        // and he is new , for registering hash the password
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // lets store it in variable 
-
-        const hashedPassword = await bcrypt.hash(password,10);
-        
-
-        // after the following create the user // 
-
+        // Create new user
         user = new User({
             name,
             email,
-            password:hashedPassword
-        })
+            password: hashedPassword,
+        });
 
-        await user.save()
+        await user.save();
 
-        res.status(200).json({message:"User registered succesfully"})
-
-    }catch(error){
-        // if something happens then // 
-        console.log(error.message)
-        res.status(500).send('server error')
+        res.status(201).json({ message: "User registered successfully" });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
 });
 
-// after register we will go for login //
+// Login User
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
 
-router.post('/login', async(req,res) => {
-    // for login ..// 
-    const {email,password} = req.body
-
-    // check if user exists // 
-
-    try{
-        let user = await User.findOne({email})
-        // if there is an error in password or email , no user //
-
-        if(!user){
-            return res.status(400).json({message : "invalid email or password please try again"})
+    try {
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email or password, please try again" });
         }
 
-        // matching the password , if it doesnt match pass error 
-
-        const isMatch = bcrypt.compare(password,user.password)
-
-        // if isMatch fails pass error // 
-
-        if(!isMatch){
-            return res.status(400).json({message:"invalid email or password please try again"})
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid email or password, please try again" });
         }
-        // then if correct else generate the jwt token // 
 
-        const token = jwt.sign({userId:user._id},
+        // Generate JWT
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-            process.env.JWT_SECRET ,{expiresIn:'1h'})
-
-            res.status(200).json({token})
-    }
-    catch(error){
-        console.error(error.message)
-
+        res.status(200).json({ token });
+    } catch (error) {
+        console.error(error.message);
         res.status(500).send('Server error');
     }
+});
 
+// Verify Email
+router.get('/verify/:token', async (req, res) => {
+    const { token } = req.params;
 
-})
-
-// verifiying the email // 
-
-router.get('/verify/:token', async(req,res) => {
-    const {token} = req.params
-
-    try{
-        const user = await User.findOne({verificationToken : token})
-
-        if(!user){
-            return res.status(400).json({message:"invalid or expired token"})
+    try {
+        // Find user by verification token
+        const user = await User.findOne({ verificationToken: token });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
         }
 
+        // Verify user
+        user.isVerified = true;
+        user.verificationToken = null;
+        await user.save();
 
-        // if not // 
-
-        user.isVerified = true
-        user.verificationToken = null
-        await user.save()
-
-        res.status(200).json({message:"email verified successfully"})
-    }catch(error){
-        console.error(error.message)
-        res.status(500).send('Server error ')
+        res.status(200).json({ message: "Email verified successfully" });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).send('Server error');
     }
-})
-
+});
 
 module.exports = router;
