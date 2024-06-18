@@ -38,8 +38,9 @@ const UserSchema = mongoose.Schema({
 
     },
     // a token for each user // 
-    isVerfiedToken:{
-        type:String
+    verificationToken:{
+        type:String,
+        default:null
     }
 
 },{
