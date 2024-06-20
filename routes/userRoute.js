@@ -10,7 +10,14 @@ const authMiddleware = require('../middlewares/auth-middleware')
 const validationMiddleware = require('../middlewares/validation-middleware')
 const { check } = require('express-validator')
 
-router.post('/login',userLogin)
+router.post(
+    '/login',[
+        check('email','please include a valid email ').isEmail(),
+        check('password','password is required').not().isEmpty()
+    ],
+    validationMiddleware,
+    userLogin
+);
 // router.post('/signup',registerUser)
 
 // adding validation to input fields with made middlewar e// 
